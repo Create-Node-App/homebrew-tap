@@ -1,6 +1,6 @@
 # Create-Node-App Homebrew Tap
 
-Homebrew formulae for [Create-Node-App](https://create-awesome-node-app.vercel.app) CLI tools.
+Homebrew formula for [Create-Node-App](https://create-awesome-node-app.vercel.app) CLI tools.
 
 ## Install
 
