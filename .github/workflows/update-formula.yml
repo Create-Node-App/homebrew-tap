@@ -16,7 +16,7 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Resolve version and checksum
         id: meta
@@ -43,7 +43,7 @@ jobs:
           sed -i "s|sha256 \".*\"|sha256 \"${FORMULA_SHA}\"|" Formula/create-awesome-node-app.rb
 
       - name: Commit and push
-        uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5590a76d # v5
+        uses: stefanzweifel/git-auto-commit-action@4a55954c782fc1ea30b9056cd3e7a2b40ca8887d # v7.2.0
         with:
           commit_message: "feat: update formula to ${{ steps.meta.outputs.version }}"
           commit_user_name: "Create Node App Bot"
