@@ -32,3 +32,11 @@ brew upgrade create-awesome-node-app
 ---
 
 > **Other install methods:** [npm](https://www.npmjs.com/package/create-awesome-node-app) · [AUR](https://aur.archlinux.org/packages/create-awesome-node-app) · [Docker](https://hub.docker.com/r/create-awesome-node-app/cli)
+
+## 👥 Contributors
+
+<a href="https://github.com/Create-Node-App/homebrew-tap/contributors">
+  <img src="https://contrib.rocks/image?repo=Create-Node-App/homebrew-tap"/>
+</a>
+
+Made with [contributors-img](https://contrib.rocks).
