@@ -24,15 +24,36 @@ jobs:
           INPUT_VERSION: ${{ github.event.inputs.version }}
           PAYLOAD_VERSION: ${{ github.event.client_payload.version }}
         run: |
+          set -euo pipefail
           VERSION="${INPUT_VERSION:-$PAYLOAD_VERSION}"
           if [ -z "$VERSION" ]; then
-            VERSION=$(curl -s https://registry.npmjs.org/create-awesome-node-app/latest | jq -r '.version')
+            VERSION=$(curl -sfL https://registry.npmjs.org/create-awesome-node-app/latest | jq -r '.version')
           fi
           URL="https://registry.npmjs.org/create-awesome-node-app/-/create-awesome-node-app-${VERSION}.tgz"
-          SHA=$(curl -sL "$URL" | sha256sum | cut -d' ' -f1)
+          TMP="$(mktemp)"
+          SHA=""
+          for attempt in $(seq 1 24); do
+            if curl -sfL "$URL" -o "$TMP"; then
+              SHA=$(sha256sum "$TMP" | cut -d' ' -f1)
+              if [ -n "$SHA" ] && [ "$SHA" != "d41d8cd98f00b204e9800998ecf8427e" ]; then
+                break
+              fi
+            fi
+            echo "::warning::npm tarball not ready for create-awesome-node-app@${VERSION} (attempt ${attempt}/24); retrying in 15s"
+            sleep 15
+            SHA=""
+          done
+          rm -f "$TMP"
+          if [ -z "$SHA" ] || [ "$SHA" = "d41d8cd98f00b204e9800998ecf8427e" ]; then
+            echo "::error::Could not download or hash tarball at $URL" >&2
+            exit 1
+          fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "sha256=$SHA"      >> "$GITHUB_OUTPUT"
           echo "url=$URL"         >> "$GITHUB_OUTPUT"
+          echo "Resolved v${VERSION}"
+          echo "  url=$URL"
+          echo "  sha256=$SHA"
 
       - name: Patch formula
         env:
