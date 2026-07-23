@@ -1,6 +1,6 @@
 # Create-Node-App Homebrew Tap
 
-[![Discord](https://img.shields.io/discord/1527933660764831825?label=Discord&logo=discord&logoColor=white)](https://discord.gg/dwFTsR7fK2)
+[![Discord](https://img.shields.io/discord/1527933660764831825?label=Discord&logo=discord&logoColor=white)](https://discord.gg/bR5VyATgka)
 
 Homebrew formula for [Create-Node-App](https://create-awesome-node-app.vercel.app) CLI tools.
 
