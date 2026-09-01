@@ -5,6 +5,8 @@ class CreateAwesomeNodeApp < Formula
   sha256 "6c59a7d3d41127ceadcc93a9505d9ae716f6984be43d7774f0f244c1e968d99c"
   license "MIT"
 
+  conflicts_with "create-awesome-node-app", because: "both install the same CLI tool"
+
   depends_on "node"
 
   def install
@@ -18,5 +20,9 @@ class CreateAwesomeNodeApp < Formula
 
   test do
     assert_match version.to_s, shell_output("#{bin}/create-awesome-node-app --version")
+    help = shell_output("#{bin}/create-awesome-node-app --help")
+    assert_includes help, "create-awesome-node-app"
+    assert_includes help, "list-templates"
+    assert_includes help, "list-addons"
   end
 end
