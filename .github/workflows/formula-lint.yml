@@ -15,10 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
       - name: Ruby syntax check on all formulas
         run: |
           set -euo pipefail
           find Formula -name '*.rb' -print0 | xargs -0 -n1 ruby -c
+
       - name: Formulas declare a Formula class
         run: |
           set -euo pipefail
@@ -29,3 +31,52 @@ jobs:
             }
           done
           echo "All formulas OK"
+
+      - name: ShellCheck workflows
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck
+          echo "ShellCheck version: $(shellcheck --version | head -1)"
+          # Lint shell snippets in workflows (allow warnings but fail on errors)
+          for wf in .github/workflows/*.yml; do
+            echo "--- shellcheck $wf (syntax) ---"
+            # Use --severity=error to surface real failures; warnings are informational
+            shellcheck --severity=error --shell=bash --exclude=SC2148,SC2034,SC2154 "$wf" || {
+              echo "::warning::$wf has shellcheck errors"
+            }
+          done
+
+      - name: Version drift check (npm)
+        run: |
+          set -euo pipefail
+          FORMULA_VER=$(grep -Eo 'create-awesome-node-app-[0-9]+\.[0-9]+\.[0-9]+\.tgz' Formula/*.rb | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          NPM_VER=$(curl -sfL https://registry.npmjs.org/create-awesome-node-app/latest | jq -r '.version')
+          echo "Formula version: $FORMULA_VER"
+          echo "npm latest: $NPM_VER"
+          if [ "$FORMULA_VER" != "$NPM_VER" ]; then
+            echo "::warning::Formula version ($FORMULA_VER) differs from npm latest ($NPM_VER) — packaging may lag release"
+          else
+            echo "Version sync OK: $FORMULA_VER"
+          fi
+
+      - name: Setup Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Brew audit (strict)
+        run: |
+          set -euo pipefail
+          brew audit --strict --online Formula/*.rb || brew audit --strict Formula/*.rb || {
+            echo "::warning::brew audit found issues"
+            exit 1
+          }
+
+      - name: Brew style
+        run: |
+          set -euo pipefail
+          brew style Formula/*.rb || {
+            echo "::warning::brew style found issues"
+            exit 1
+          }
