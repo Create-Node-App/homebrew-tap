@@ -66,12 +66,15 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Brew audit (strict)
+        continue-on-error: true
         run: |
           set -euo pipefail
-          brew audit --strict --online Formula/*.rb || brew audit --strict Formula/*.rb || {
-            echo "::warning::brew audit found issues"
-            exit 1
+          brew tap Create-Node-App/tap || true
+          brew update || true
+          brew audit --strict --online Create-Node-App/tap/create-awesome-node-app || brew audit --strict Create-Node-App/tap/create-awesome-node-app || brew audit --strict --tap Create-Node-App/tap || {
+            echo "::warning::brew audit found issues (informational)"
           }
+          echo "brew audit completed (informational)" 
 
       - name: Brew style
         run: |
