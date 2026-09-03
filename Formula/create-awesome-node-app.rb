@@ -5,8 +5,6 @@ class CreateAwesomeNodeApp < Formula
   sha256 "ce693c9fd8a97dddf19c05c299ad1428ba802e7103582c8856e219c9e4d9216d"
   license "MIT"
 
-  conflicts_with "create-awesome-node-app", because: "both install the same CLI tool"
-
   depends_on "node"
 
   def install
