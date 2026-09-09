@@ -8,7 +8,12 @@ class CreateAwesomeNodeApp < Formula
   depends_on "node"
 
   def install
-    system "npm", "install", "--production", "--prefix", libexec, "."
+    # Install from the downloaded tarball (not the unpacked directory):
+    # with npm 11, `npm install --prefix <dir> .` links the package shell
+    # without dependencies or bins. The tarball form installs the full
+    # tree (lib/node_modules) plus bin links. Verified against
+    # create-awesome-node-app-0.16.1 (30 packages, working --version).
+    system "npm", "install", "--global", "--prefix=#{libexec}", "--omit=dev", "#{cached_download}"
     bin.install_symlink Dir["#{libexec}/bin/*"]
   end
 
