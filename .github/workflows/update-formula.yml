@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   update:
@@ -63,9 +64,29 @@ jobs:
           sed -i "s|url \".*\"|url \"${FORMULA_URL}\"|"     Formula/create-awesome-node-app.rb
           sed -i "s|sha256 \".*\"|sha256 \"${FORMULA_SHA}\"|" Formula/create-awesome-node-app.rb
 
-      - name: Commit and push
-        uses: stefanzweifel/git-auto-commit-action@4a55954c782fc1ea30b9056cd3e7a2b40ca8887d # v7.2.0
-        with:
-          commit_message: "feat: update formula to ${{ steps.meta.outputs.version }}"
-          commit_user_name: "Create Node App Bot"
-          commit_user_email: "ulisescf.24@gmail.com"
+      # main is branch-protected (PR + Formula lint required), so push the
+      # bump to a branch and open a PR instead of committing to main.
+      - name: Open formula update pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FORMULA_VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          BRANCH="feat/formula-${FORMULA_VERSION}"
+          git config user.name "Create Node App Bot"
+          git config user.email "ulisescf.24@gmail.com"
+          git checkout -B "$BRANCH"
+          git add Formula/create-awesome-node-app.rb
+          if git diff --cached --quiet; then
+            echo "Formula already at v${FORMULA_VERSION}, nothing to do"
+            exit 0
+          fi
+          git commit -m "feat: update formula to ${FORMULA_VERSION}"
+          git push -u origin "$BRANCH"
+          if gh pr view "$BRANCH" --json number -q .number >/dev/null 2>&1; then
+            echo "Update PR already open for v${FORMULA_VERSION}"
+          else
+            gh pr create --base main --head "$BRANCH" \
+              --title "feat: update formula to ${FORMULA_VERSION}" \
+              --body "Automated formula bump for create-awesome-node-app@${FORMULA_VERSION} (release dispatch)."
+          fi
