@@ -1,8 +1,8 @@
 class CreateAwesomeNodeApp < Formula
   desc "Composable scaffolding CLI — one command, any Node.js stack"
   homepage "https://create-awesome-node-app.vercel.app"
-  url "https://registry.npmjs.org/create-awesome-node-app/-/create-awesome-node-app-0.16.1.tgz"
-  sha256 "ce693c9fd8a97dddf19c05c299ad1428ba802e7103582c8856e219c9e4d9216d"
+  url "https://registry.npmjs.org/create-awesome-node-app/-/create-awesome-node-app-0.17.0.tgz"
+  sha256 "e6fc9b1d59664b958be3f0cfb1493a426a955f3d90a25732fd61e7dcb6515cab"
   license "MIT"
 
   depends_on "node"
