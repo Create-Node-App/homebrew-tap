@@ -8,11 +8,7 @@ class CreateAwesomeNodeApp < Formula
   depends_on "node"
 
   def install
-    # Filter out --min-release-age so freshly-published dependencies (< 24 h) can
-    # be installed. Homebrew adds this flag as a supply-chain guard for end users,
-    # but it blocks valid releases immediately after publish.
-    npm_args = Language::Node.std_npm_args(libexec).reject { |a| a.start_with?("--min-release-age") }
-    system "npm", "install", *npm_args
+    system "npm", "install", "--production", "--prefix", libexec, "."
     bin.install_symlink Dir["#{libexec}/bin/*"]
   end
 
