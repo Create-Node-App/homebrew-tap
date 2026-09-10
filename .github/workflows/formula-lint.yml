@@ -83,4 +83,36 @@ jobs:
           brew style Formula/*.rb || {
             echo "::warning::brew style found issues (informational)"
           }
-          echo "brew style completed (informational)" 
+          echo "brew style completed (informational)"
+
+  url-sha-validation:
+    name: URL + SHA256 validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Verify formula url matches registry tarball sha256
+        run: |
+          set -euo pipefail
+          FORMULA="$(ls Formula/*.rb | head -1)"
+          URL="$(grep -Eo 'url "[^"]+"' "$FORMULA" | head -1 | cut -d'"' -f2)"
+          EXPECTED="$(grep -Eo 'sha256 "[^"]+"' "$FORMULA" | head -1 | cut -d'"' -f2)"
+          test -n "$URL" || { echo "::error::$FORMULA: no url found"; exit 1; }
+          test -n "$EXPECTED" || { echo "::error::$FORMULA: no sha256 found"; exit 1; }
+          echo "$URL" | grep -Eq 'https://registry\.npmjs\.org/create-awesome-node-app/-/create-awesome-node-app-[0-9]+\.[0-9]+\.[0-9]+\.tgz' || {
+            echo "::error::$FORMULA: unexpected url format: $URL"
+            exit 1
+          }
+          echo "$EXPECTED" | grep -Eq '^[0-9a-f]{64}$' || {
+            echo "::error::$FORMULA: sha256 is not a 64-char hex digest"
+            exit 1
+          }
+          TMP="$(mktemp)"
+          curl -sfL "$URL" -o "$TMP"
+          ACTUAL="$(sha256sum "$TMP" | cut -d' ' -f1)"
+          rm -f "$TMP"
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "::error::$FORMULA: sha256 mismatch (formula=$EXPECTED registry=$ACTUAL)"
+            exit 1
+          fi
+          echo "URL + SHA256 OK: $URL" 
